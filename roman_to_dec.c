@@ -66,6 +66,7 @@ int numeral_to_decimal(char* numeral) {
             consecutive++;
             increasing = false; 
         } else {
+            if (increasing) return 0;
             consecutive = ONE;
             increasing = false; 
         }

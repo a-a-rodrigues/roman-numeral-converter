@@ -1,8 +1,10 @@
 all:
-	gcc num_to_dec.c -o num_to_dec
+	gcc roman_to_dec.c -o roman_to_dec
+	gcc dec_to_roman.c -o dec_to_roman
 
 debug:
-	gcc num_to_dec.c -o num_to_dec -DDEBUG
+	gcc roman_to_dec.c -o roman_to_dec -DDEBUG
+	gcc dec_to_roman.c -o dec_to_roman -DDEBUG
 
 clean: 
-	rm num_to_dec num_to_dec.exe
+	rm roman_to_dec roman_to_dec.exe dec_to_roman dec_to_roman.exe
