@@ -37,10 +37,7 @@ char* digit_to_roman(int digit, short power) {
 }
 
 bool romanize(char* roman, int decimal) {
-    if (decimal < 0 || decimal > 3888) {
-        fprintf(stdout, "Input decimal number is outisde the range of Roman numerals (1-3888)!\n");
-        return false;
-    }
+    if (decimal < 0 || decimal > 3888) return false;
     
     for (short power = 0; decimal != 0; power++, decimal /= 10) {
         int digit = decimal % 10;
@@ -78,7 +75,7 @@ int main (int argc, char** argv) {
     if (romanize(roman, decimal))
         fprintf(stdout, "Your number as a Roman numeral is: %s\n", roman); 
     else 
-        fprintf(stdout, "Kill yourself.\n");
+        fprintf(stdout, "Input decimal number is outisde the range of Roman numerals (1-3888)!\n");
 
     return EXIT_SUCCESS;
 }
