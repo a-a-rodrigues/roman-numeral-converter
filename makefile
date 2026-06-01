@@ -7,4 +7,4 @@ all:
 	gcc dec_to_roman.c -o dec_to_roman
 
 clean: 
-	rm roman_to_dec roman_to_dec.exe dec_to_roman dec_to_roman.exe
+	rm roman_to_dec roman_to_dec.exe dec_to_roman dec_to_roman.exe *.txt

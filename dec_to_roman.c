@@ -3,6 +3,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#ifdef _WIN32
+#include <io.h>
+#define F_OK 0
+#define access _access
+#else
+#include <unistd.h>
+#endif
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -37,7 +44,7 @@ char* digit_to_roman(int digit, short power) {
 }
 
 bool romanize(char* roman, int decimal) {
-    if (decimal < 0 || decimal > 3888) return false;
+    if (decimal < 0 || decimal > 3999) return false;
     
     for (short power = 0; decimal != 0; power++, decimal /= 10) {
         int digit = decimal % 10;
@@ -50,8 +57,6 @@ bool romanize(char* roman, int decimal) {
             size_t term_len = strlen(term);
 
             memmove(roman + term_len, roman, roman_len + 1);
-            
-
             memcpy(roman, term, term_len);
             
             if (DEBUG) fprintf(stdout, "Roman: %s\tTerm: %s\n", roman, term);
@@ -61,11 +66,42 @@ bool romanize(char* roman, int decimal) {
     return true;
 }
 
+void test_correctness (void) {
+    FILE *dp;
+
+    dp = fopen("numbers.txt", "w+");
+    for (int i = 1; i < 4000; i++) {
+        fprintf(dp, "%d\n", i);
+    }
+    fclose(dp);
+
+    FILE *dst = fopen("romans.txt", "w");
+    FILE *file = fopen("numbers.txt", "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    int num;
+
+    while (fscanf(file, "%d", &num) == 1) {
+        char roman[BUFFLENGTH] = {0};
+        romanize(roman, num); 
+        fprintf(dst, "%s\n", roman);
+    }
+    
+    fclose(file);
+    fclose(dst);
+
+}
+
 int main (int argc, char** argv) {
     if (argc != 2) {
-        fprintf(stdout, "Usage: ./dec_to_num <1-3888>\n");
+        fprintf(stdout, "Usage: ./dec_to_num <1-3999>\n");
         return EXIT_FAILURE;
     }
+
+    if (DEBUG) test_correctness();
 
     char* endptr;
     int decimal = strtol(argv[1], &endptr, 10);

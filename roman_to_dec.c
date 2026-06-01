@@ -23,12 +23,11 @@
 
 /**
  *  TODO: 
- *      Create performance tests
+ *      Create performance tests (probably in a separate file)
  *      Allow run from file
  *      Make variables (number, numeral, decimal) more consistent, defined
  *      Implement specific error conditions, output
  *      Implement interactive mode
- *      Fix data types for space efficiency 
  */
 
 int decimalize(char* roman) {
@@ -139,11 +138,16 @@ int decimalize(char* roman) {
     return decimal;
 }
 
+void test_correctness() {
+    
+}
+
 int main(int argc, char** argv) {
     if (argc != 2) {
         fprintf(stdout, "Usage: ./num_to_dec <I-MMMDCCCLXXXVIII>\n");
         return EXIT_FAILURE;
     }
+
 
     char* roman = argv[1];
     int decimal = decimalize(roman);
