@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -18,6 +17,10 @@
 #define V 5
 #define I 1
 
+#define HUNDREDS_FLAG 0x01 // 00000001
+#define TENS_FLAG 0x02 // 00000010
+#define ONES_FLAG 0x04 // 00000100
+
 /**
  *  TODO: 
  *      Create performance tests
@@ -29,28 +32,27 @@
  */
 
 int decimalize(char* roman) {
-    int decimal = 0;
-    int mCount = 0;
-    int dCount = 0;
-    int cCount = 0; 
-    int lCount = 0;
-    int xCount = 0;
-    int vCount = 0;
-    int iCount = 0;
-    bool hundreds_flag = false;
-    bool tens_flag = false;
-    bool ones_flag = false;
+    uint16_t decimal = 0;
+    uint8_t flags = 0;
+    uint8_t mCount = 0;
+    uint8_t dCount = 0;
+    uint8_t cCount = 0; 
+    uint8_t lCount = 0;
+    uint8_t xCount = 0;
+    uint8_t vCount = 0;
+    uint8_t iCount = 0;
 
     for (char* cur = roman; *cur != '\0'; cur++) {
         fprintf(stdout, "%c, ", *cur);
         switch (*cur) {
             case 'M':
                 if (iCount > 0 || vCount > 0 || xCount > 0 || lCount > 0 
-                    || cCount > 1 || dCount > 0 || mCount == 3 || hundreds_flag)
+                    || cCount > 1 || dCount > 0 || (mCount == 3 && cCount != 1) 
+                    || flags & HUNDREDS_FLAG)
                     return 0;
-                if (cCount == 1 && mCount < 3) {
+                if (cCount == 1 && mCount <= 3) {
                     decimal -= C * 2;
-                    hundreds_flag = true;
+                    flags |= HUNDREDS_FLAG;
                 }
 
                 decimal += M;
@@ -60,11 +62,11 @@ int decimalize(char* roman) {
                 break;
             case 'D':
                 if (iCount > 0 || vCount > 0 || xCount > 0 || lCount > 0 
-                    || cCount > 1 || dCount > 0 || hundreds_flag)
+                    || cCount > 1 || dCount > 0 || flags & HUNDREDS_FLAG)
                     return 0;
                 if (cCount == 1) {
                     decimal -= C * 2;
-                    hundreds_flag = true;
+                    flags |= HUNDREDS_FLAG;
                 }
 
                 dCount++;
@@ -73,11 +75,11 @@ int decimalize(char* roman) {
                 break;
             case 'C':
                 if (iCount > 0 || vCount > 0 || xCount > 1 || lCount > 0 
-                    || cCount == 3 || tens_flag)
+                    || (cCount == 3 && xCount != 1) || flags & TENS_FLAG)
                     return 0;
-                if (xCount == 1 && cCount < 3) {
+                if (xCount == 1 && cCount <= 3) {
                     decimal -= X * 2;
-                    tens_flag = true;
+                    flags |= TENS_FLAG;
                 }
 
                 cCount++;
@@ -86,11 +88,11 @@ int decimalize(char* roman) {
                 break;
             case 'L':
                 if (iCount > 0 || vCount > 0 || xCount > 1 
-                    || lCount > 0 || tens_flag)
+                    || lCount > 0 || flags & TENS_FLAG)
                     return 0;
                 if (xCount == 1) {
                     decimal -= X * 2;
-                    tens_flag = true;
+                    flags |= TENS_FLAG;
                 }
 
                 lCount++;
@@ -98,23 +100,24 @@ int decimalize(char* roman) {
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'X':
-                if (iCount > 1 || vCount > 0 || xCount == 3 || ones_flag)
+                if (iCount > 1 || vCount > 0 || (xCount == 3 && iCount != 1) || 
+                    flags & ONES_FLAG)
                     return 0;
-                if (iCount == 1 && xCount < 3) {
+                if (iCount == 1 && xCount <= 3) {
                     decimal -= I * 2;
-                    ones_flag = true;
+                    flags |= ONES_FLAG;
                 }
                 
                 xCount++;
                 decimal += X;
-                printf("Current dec: %d\n", decimal);
+                if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'V':
-                if (iCount > 1 || vCount > 0 || ones_flag)
+                if (iCount > 1 || vCount > 0 || flags & ONES_FLAG)
                     return 0;
                 if (iCount == 1) {
                     decimal -= I * 2;
-                    ones_flag = true;
+                    flags |= ONES_FLAG;
                 }
 
                 vCount++;
