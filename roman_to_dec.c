@@ -53,102 +53,94 @@ base_type_t get_letter_base(char letter) {
     return DECIMAL;
 }
 
-validation_status_t validate_form(char* pos[], term_form_t form) {
-    // Try each "form" to determine which one fits the current term pointer to by our four char pointers
-        // The greatest form initially passed will correspond with distance to end of numeral: we cannot get d = get_letter_value(*pos[3]) when it is '\0'
-        // Rather than returning INVALID in individual cases, we must instead call validate_form recursively until form = EMPTY (default)
-    int a;
-    int b;
-    int c;
-    int d;
-
-    if (DEBUG) fprintf(stdout, "We are checking to see form is valid: %d", form);
-    
-    switch (form) {
-        case ONE_LETTER:
-            return POSITIVE;
-
-        case TWO_LETTER:
-            a = get_letter_value(*pos[0]);
-            b = get_letter_value(*pos[1]);
-
-            if (DEBUG) fprintf(stdout, "We are checking to see if this term is of TWO_LETTER form: %d, %d, %d\n", a, b, c);
-
-            if (a == b) {
-                if (get_letter_base(a) == QUINARY) return INVALID;
-                return POSITIVE;
-            } else if (get_letter_value(*pos[0]) < get_letter_value(*pos[1])) {
-                if ((get_letter_base(*pos[0]) == QUINARY) || (get_letter_value(*pos[0]) < get_letter_value(*pos[1]) / 10)) return INVALID;
-                return NEGATIVE;
-            }             
-            return POSITIVE;
-        
-        case THREE_LETTER:
-            a = get_letter_value(*pos[0]);
-            b = get_letter_value(*pos[1]);
-            c = get_letter_value(*pos[2]);
-
-            if (DEBUG) fprintf(stdout, "We are checking to see if this term is of THREE_LETTER form: %d, %d, %d\n", a, b, c);
-
-            if (a == b) {
-                if (get_letter_base(a) == QUINARY) return INVALID;
-                if (b != c) return INVALID;
-                return POSITIVE;
-            } else if (b == c) {
-                if (get_letter_base(b) == QUINARY) return INVALID;
-                if (a < b) return INVALID;
-                return POSITIVE;
-            } 
-            return INVALID;
-
-        case FOUR_LETTER:
-            a = get_letter_value(*pos[0]);
-            b = get_letter_value(*pos[1]);
-            c = get_letter_value(*pos[2]);
-            d = get_letter_value(*pos[3]);
-
-            if (DEBUG) fprintf(stdout, "We are checking to see if this term is of THREE_LETTER form: %d, %d, %d, %d\n", a, b, c, d);
-
-            if (b == c && c == d) {
-                if (get_letter_base(b) == QUINARY) return INVALID;
-                if (a < b) return INVALID;
-                return POSITIVE;
-            }
-
-            return INVALID;                
-
-        default:
-            return INVALID;
-    }
-
-}
-
 int decimalize(char* roman) {
-    char* pos[4];
-    term_form_t form = EMPTY;
-    
-    for (int i = 0; i < 4; i++) {
-        if (DEBUG) fprintf(stdout, " roman[%d]: %c\n", i, *(roman + i));
+    int decimal = 0;
+    int mCount = 0;
+    int dCount = 0;
+    int cCount = 0; 
+    int lCount = 0;
+    int xCount = 0;
+    int vCount = 0;
+    int iCount = 0;
 
-        if (*(roman + i) != '\0') {
-            pos[i] = (roman + i);
-            form++;
+    for (char* cur = roman; *cur != '\0'; cur++) {
+        fprintf(stdout, "%c, ", *cur);
+        switch (*cur) {
+            case 'M':
+                if (iCount > 0 || vCount > 0 || xCount > 0 || lCount > 0 
+                    || cCount > 1 || dCount > 0 || mCount == 3)
+                    return 0;
+                if (cCount == 1 && mCount < 3)
+                    decimal -= 2 * get_letter_value('C');
+
+                mCount++;
+                decimal += get_letter_value('M');
+                if (DEBUG) printf("Current dec: %d\n", decimal);
+                break;
+            case 'D':
+                if (iCount > 0 || vCount > 0 || xCount > 0 || lCount > 0 
+                    || cCount > 1 || dCount > 0)
+                    return 0;
+                if (cCount == 1)
+                    decimal -= 2 * get_letter_value('C');
+
+                dCount++;
+                decimal += get_letter_value('D');
+                if (DEBUG) printf("Current dec: %d\n", decimal);
+                break;
+            case 'C':
+                if (iCount > 0 || vCount > 0 || xCount > 1 || lCount > 0 || cCount == 3)
+                    return 0;
+                if (xCount == 1 && cCount < 3)
+                    decimal -= 2 * get_letter_value('X');
+
+                cCount++;
+                decimal += get_letter_value('C');
+                if (DEBUG) printf("Current dec: %d\n", decimal);
+                break;
+            case 'L':
+                if (iCount > 0 || vCount > 0 || xCount > 1 || lCount > 0)
+                    return 0;
+                if (xCount == 1)
+                    decimal -= 2 * get_letter_value('X');
+
+                lCount++;
+                decimal += get_letter_value('L');
+                if (DEBUG) printf("Current dec: %d\n", decimal);
+                break;
+            case 'X':
+                if (iCount > 1 || vCount > 0 || xCount == 3)
+                    return 0;
+                if (iCount == 1 && xCount < 3)
+                    decimal -= 2 * get_letter_value('I');
+                
+                xCount++;
+                decimal += get_letter_value('X');
+                printf("Current dec: %d\n", decimal);
+                break;
+            case 'V':
+                if (iCount > 1 || vCount > 0)
+                    return 0;
+                if (iCount == 1)
+                    decimal -= 2 * get_letter_value('I');
+
+                vCount++;
+                decimal += get_letter_value('V');
+                if (DEBUG) printf("Current dec: %d\n", decimal);
+                break;
+            case 'I': 
+                if (iCount == 3)
+                    return 0;
+
+                iCount++;
+                decimal += get_letter_value('I');
+                if (DEBUG) printf("Current dec: %d\n", decimal);
+                break;
+            default:
+                return 0;
         }
-        else
-            *pos[i] = '\0';
     }
-
-    validation_status_t status;
-
-    while (form != EMPTY){
-        status = validate_form(pos, form);
-        form--;
-    }
-
-    if (DEBUG) fprintf(stdout, "The characters selected right now are %c | %c | %c | %c | \nValidation: %d\n", *pos[0], *pos[1], *pos[2], *pos[3], status);
-
-    return 1;
-
+    return decimal;
 }
 
 int main(int argc, char** argv) {

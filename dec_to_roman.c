@@ -69,7 +69,7 @@ int main (int argc, char** argv) {
 
     char* endptr;
     int decimal = strtol(argv[1], &endptr, 10);
-    if (DEBUG) fprintf(stdout, "Number input: %d\n");
+    if (DEBUG) fprintf(stdout, "Number input: %d\n", decimal);
 
     char roman[BUFFLENGTH] = {0};
 
