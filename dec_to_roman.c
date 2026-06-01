@@ -53,7 +53,8 @@ bool romanize(char* roman, int decimal) {
             
 
             memcpy(roman, term, term_len);
-                    if (DEBUG) fprintf(stdout, "Roman: %s\tTerm: %s\n", roman, term);
+            
+            if (DEBUG) fprintf(stdout, "Roman: %s\tTerm: %s\n", roman, term);
         }
     }
 
