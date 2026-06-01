@@ -10,48 +10,23 @@
 
 #define BUFFSIZE 32
 
+#define M 1000
+#define D 500
+#define C 100
+#define L 50
+#define X 10
+#define V 5
+#define I 1
+
 /**
- *  TODO: Create reverse conversion algorithm
+ *  TODO: 
  *      Create performance tests
  *      Allow run from file
+ *      Make variables (number, numeral, decimal) more consistent, defined
+ *      Implement specific error conditions, output
+ *      Implement interactive mode
+ *      Fix data types for space efficiency 
  */
-
-typedef enum {
-    QUINARY,
-    DECIMAL,
-} base_type_t;
-
-typedef enum {
-    EMPTY,
-    ONE_LETTER,
-    TWO_LETTER,
-    THREE_LETTER,
-    FOUR_LETTER,
-} term_form_t;
-
-typedef enum {
-    NEGATIVE,
-    POSITIVE,
-    INVALID,
-} validation_status_t;
-
-int get_letter_value(char letter) {
-    switch (letter) {
-        case 'M': return 1000;
-        case 'D': return 500;
-        case 'C': return 100;
-        case 'L': return 50;
-        case 'X': return 10;
-        case 'V': return 5;
-        case 'I': return 1;
-        default: return 0;
-    }
-}
-
-base_type_t get_letter_base(char letter) {
-    if (get_letter_value(letter) % 3 == 2) return QUINARY;
-    return DECIMAL;
-}
 
 int decimalize(char* roman) {
     int decimal = 0;
@@ -62,70 +37,88 @@ int decimalize(char* roman) {
     int xCount = 0;
     int vCount = 0;
     int iCount = 0;
+    bool hundreds_flag = false;
+    bool tens_flag = false;
+    bool ones_flag = false;
 
     for (char* cur = roman; *cur != '\0'; cur++) {
         fprintf(stdout, "%c, ", *cur);
         switch (*cur) {
             case 'M':
                 if (iCount > 0 || vCount > 0 || xCount > 0 || lCount > 0 
-                    || cCount > 1 || dCount > 0 || mCount == 3)
+                    || cCount > 1 || dCount > 0 || mCount == 3 || hundreds_flag)
                     return 0;
-                if (cCount == 1 && mCount < 3)
-                    decimal -= 2 * get_letter_value('C');
+                if (cCount == 1 && mCount < 3) {
+                    decimal -= C * 2;
+                    hundreds_flag = true;
+                }
+
+                decimal += M;
 
                 mCount++;
-                decimal += get_letter_value('M');
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'D':
                 if (iCount > 0 || vCount > 0 || xCount > 0 || lCount > 0 
-                    || cCount > 1 || dCount > 0)
+                    || cCount > 1 || dCount > 0 || hundreds_flag)
                     return 0;
-                if (cCount == 1)
-                    decimal -= 2 * get_letter_value('C');
+                if (cCount == 1) {
+                    decimal -= C * 2;
+                    hundreds_flag = true;
+                }
 
                 dCount++;
-                decimal += get_letter_value('D');
+                decimal += D;
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'C':
-                if (iCount > 0 || vCount > 0 || xCount > 1 || lCount > 0 || cCount == 3)
+                if (iCount > 0 || vCount > 0 || xCount > 1 || lCount > 0 
+                    || cCount == 3 || tens_flag)
                     return 0;
-                if (xCount == 1 && cCount < 3)
-                    decimal -= 2 * get_letter_value('X');
+                if (xCount == 1 && cCount < 3) {
+                    decimal -= X * 2;
+                    tens_flag = true;
+                }
 
                 cCount++;
-                decimal += get_letter_value('C');
+                decimal += C;
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'L':
-                if (iCount > 0 || vCount > 0 || xCount > 1 || lCount > 0)
+                if (iCount > 0 || vCount > 0 || xCount > 1 
+                    || lCount > 0 || tens_flag)
                     return 0;
-                if (xCount == 1)
-                    decimal -= 2 * get_letter_value('X');
+                if (xCount == 1) {
+                    decimal -= X * 2;
+                    tens_flag = true;
+                }
 
                 lCount++;
-                decimal += get_letter_value('L');
+                decimal += L;
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'X':
-                if (iCount > 1 || vCount > 0 || xCount == 3)
+                if (iCount > 1 || vCount > 0 || xCount == 3 || ones_flag)
                     return 0;
-                if (iCount == 1 && xCount < 3)
-                    decimal -= 2 * get_letter_value('I');
+                if (iCount == 1 && xCount < 3) {
+                    decimal -= I * 2;
+                    ones_flag = true;
+                }
                 
                 xCount++;
-                decimal += get_letter_value('X');
+                decimal += X;
                 printf("Current dec: %d\n", decimal);
                 break;
             case 'V':
-                if (iCount > 1 || vCount > 0)
+                if (iCount > 1 || vCount > 0 || ones_flag)
                     return 0;
-                if (iCount == 1)
-                    decimal -= 2 * get_letter_value('I');
+                if (iCount == 1) {
+                    decimal -= I * 2;
+                    ones_flag = true;
+                }
 
                 vCount++;
-                decimal += get_letter_value('V');
+                decimal += V;
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             case 'I': 
@@ -133,7 +126,7 @@ int decimalize(char* roman) {
                     return 0;
 
                 iCount++;
-                decimal += get_letter_value('I');
+                decimal += I;
                 if (DEBUG) printf("Current dec: %d\n", decimal);
                 break;
             default:
